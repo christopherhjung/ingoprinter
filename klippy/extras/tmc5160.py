@@ -316,6 +316,8 @@ class TMC5160:
         set_config_field(config, "tpfd", 4)
         set_config_field(config, "diss2g", 0)
         set_config_field(config, "diss2vs", 0)
+
+        set_config_field(config, "diag1_poscomp_pushpull", 1)
         #   COOLCONF
         set_config_field(config, "semin", 0)    # page 52
         set_config_field(config, "seup", 0)
