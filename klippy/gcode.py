@@ -46,6 +46,7 @@ class GCodeParser:
             for a in getattr(self, 'cmd_' + cmd + '_aliases', []):
                 self.register_command(a, func, wnr)
         # G-Code coordinate manipulation
+        self.coord_system = 0
         self.absolute_coord = self.absolute_extrude = True
         self.base_position = [0.0, 0.0, 0.0, 0.0]
         self.last_position = [0.0, 0.0, 0.0, 0.0]
@@ -440,7 +441,7 @@ class GCodeParser:
                 key_param, key))
         values[key_param](params)
     all_handlers = [
-        'G1', 'G4', 'G28', 'M400',
+        'G1', 'G4','G17', 'G18', 'G19', 'G28', 'M400',
         'G20', 'M82', 'M83', 'G90', 'G91', 'G92', 'M114', 'M220', 'M221',
         'SET_GCODE_OFFSET', 'SAVE_GCODE_STATE', 'RESTORE_GCODE_STATE',
         'M105', 'M112', 'M115', 'IGNORE', 'GET_POSITION',
@@ -482,6 +483,12 @@ class GCodeParser:
         # Dwell
         delay = self.get_float('P', params, 0., minval=0.) / 1000.
         self.toolhead.dwell(delay)
+    def cmd_G17(self, params):
+        self.coord_system = 0
+    def cmd_G18(self, params):
+        self.coord_system = 1
+    def cmd_G19(self, params):
+        self.coord_system = 2
     def cmd_G28(self, params):
         # Move to origin
         axes = []
@@ -569,6 +576,7 @@ class GCodeParser:
         state_name = self.get_str('NAME', params, 'default')
         self.saved_states[state_name] = {
             'absolute_coord': self.absolute_coord,
+            'coord_system': self.coord_system,
             'absolute_extrude': self.absolute_extrude,
             'base_position': list(self.base_position),
             'last_position': list(self.last_position),
@@ -584,6 +592,7 @@ class GCodeParser:
             raise self.error("Unknown g-code state: %s" % (state_name,))
         # Restore state
         self.absolute_coord = state['absolute_coord']
+        self.coord_system = state['coord_system']
         self.absolute_extrude = state['absolute_extrude']
         self.base_position = list(state['base_position'])
         self.homing_position = list(state['homing_position'])
