@@ -11,11 +11,9 @@ class drv8711:
         self.printer = config.get_printer()
         self.gcode = self.printer.lookup_object("gcode")
         self.printer.register_event_handler("klippy:connect", self._handle_connect)
-        self.spi = bus.MCU_SPI_from_config(config, 3, default_speed=4000000)
+        self.spi = bus.MCU_SPI_from_config(config, 3)
 
     def _handle_connect(self):
-        self.gcode.respond_info("iniiiiiiiiit")
-
         self.send(0x0E21)
         self.send(0x1196)
         self.send(0x2097)
@@ -28,7 +26,15 @@ class drv8711:
     def send(self, val):
         data = [(val >> 8) & 0xff, val & 0xff]
         self.spi.spi_send(data)
+        response = self.spi.spi_send(data)
 
+    def reverse_mask(self, x):
+        x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1)
+        x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2)
+        x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4)
+        x = ((x & 0x00FF00FF) << 8) | ((x & 0xFF00FF00) >> 8)
+        x = ((x & 0x0000FFFF) << 16) | ((x & 0xFFFF0000) >> 16)
+        return x
 
 def load_config_prefix(config):
     return drv8711(config)
