@@ -15,14 +15,19 @@ class drv8711:
 
     def _handle_connect(self):
         self.gcode.respond_info("iniiiiiiiiit")
-        self.spi.spi_send(0x0E21)
-        self.spi.spi_send(0x1196)
-        self.spi.spi_send(0x2097)
-        self.spi.spi_send(0x31D7)
-        self.spi.spi_send(0x4430)
-        self.spi.spi_send(0x583C)
-        self.spi.spi_send(0x60F0)
-        self.spi.spi_send(0x7000)
+
+        self.send(0x0E21)
+        self.send(0x1196)
+        self.send(0x2097)
+        self.send(0x31D7)
+        self.send(0x4430)
+        self.send(0x583C)
+        self.send(0x60F0)
+        self.send(0x7000)
+
+    def send(self, val):
+        data = [(val >> 8) & 0xff, val & 0xff]
+        self.spi.spi_send(data)
 
 
 def load_config_prefix(config):
