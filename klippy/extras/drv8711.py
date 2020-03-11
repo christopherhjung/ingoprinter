@@ -1,14 +1,16 @@
-import bus
+import bus, math
 
 class drv8711:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.printer.register_event_handler("klippy:connect", self._handle_connect)
         self.spi = bus.MCU_SPI_from_config(config, 3)
+        self.current = config.getint('current', 200, minval=0, maxval=255)
+        self.microsteps = math.ceil(math.log(config.getint('microsteps', 16, minval=0, maxval=256)))
 
     def _handle_connect(self):
-        self.send(0x0E21)
-        self.send(0x1196)
+        self.send(0x0E01 | self.microsteps << 3)
+        self.send(0x1100 | self.current)
         self.send(0x2097)
         self.send(0x31D7)
         self.send(0x4430)
