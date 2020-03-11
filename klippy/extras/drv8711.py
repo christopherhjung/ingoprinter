@@ -6,7 +6,7 @@ class drv8711:
         self.printer.register_event_handler("klippy:connect", self._handle_connect)
         self.spi = bus.MCU_SPI_from_config(config, 3)
         self.current = config.getint('current', 150, minval=0, maxval=255)
-        self.microsteps = math.ceil(math.log2(config.getint('microsteps', 16, minval=1, maxval=256)))
+        self.microsteps = math.ceil(math.log(config.getint('microsteps', 16, minval=1, maxval=256))/log(2))
 
     def _handle_connect(self):
         self.send(0x0E01 | self.microsteps << 3)
